@@ -53,7 +53,9 @@ public class LicenseService {
 	public License getLicense(String licenseId, String organizationId, String clientType){
 		License license = licenseRepository.findByOrganizationIdAndLicenseId(organizationId, licenseId);
 		if (null == license) {
-			throw new IllegalArgumentException(String.format(messages.getMessage("license.search.error.message", null, null),licenseId, organizationId));	
+			String message = String.format(messages.getMessage("license.search.error.message", null, null),licenseId, organizationId);
+			logger.error(message);
+			throw new IllegalArgumentException(message);	
 		}
 
 		Organization organization = retrieveOrganizationInfo(organizationId, clientType);
@@ -64,6 +66,7 @@ public class LicenseService {
 			license.setContactPhone(organization.getContactPhone());
 		}
 
+		logger.debug("Retrieving license information: " + license.toString());
 		return license.withComment(config.getExampleProperty());
 	}
 
@@ -72,15 +75,15 @@ public class LicenseService {
 
 		switch (clientType) {
 		case "feign":
-			System.out.println("I am using the feign client");
+			logger.debug("I am using the feign client");
 			organization = organizationFeignClient.getOrganization(organizationId);
 			break;
 		case "rest":
-			System.out.println("I am using the rest client");
+			logger.debug("I am using the rest client");
 			organization = organizationRestClient.getOrganization(organizationId);
 			break;
 		case "discovery":
-			System.out.println("I am using the discovery client");
+			logger.debug("I am using the discovery client");
 			organization = organizationDiscoveryClient.getOrganization(organizationId);
 			break;
 		default:
@@ -110,6 +113,7 @@ public class LicenseService {
 		license.setLicenseId(licenseId);
 		licenseRepository.delete(license);
 		responseMessage = String.format(messages.getMessage("license.delete.message", null, null),licenseId);
+		logger.debug("Deleting license : " + responseMessage);
 		return responseMessage;
 
 	}
@@ -125,16 +129,16 @@ public class LicenseService {
 		return licenseRepository.findByOrganizationId(organizationId);
 	}
 
-	@SuppressWarnings("unused")
-	private List<License> buildFallbackLicenseList(String organizationId, Throwable t){
-		List<License> fallbackList = new ArrayList<>();
-		License license = new License();
-		license.setLicenseId("0000000-00-00000");
-		license.setOrganizationId(organizationId);
-		license.setProductName("Sorry no licensing information currently available");
-		fallbackList.add(license);
-		return fallbackList;
-	}
+@SuppressWarnings("unused")
+private List<License> buildFallbackLicenseList(String organizationId, Throwable t){
+	List<License> fallbackList = new ArrayList<>();
+	License license = new License();
+	license.setLicenseId("0000000-00-00000");
+	license.setOrganizationId(organizationId);
+	license.setProductName("Sorry no licensing information currently available");
+	fallbackList.add(license);
+	return fallbackList;
+}
 
 	private void randomlyRunLong(){
 		Random rand = new Random();

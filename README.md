@@ -49,3 +49,13 @@ psql -U postgres
 \c databasename
 \dt
 ```
+
+# Accessing Kibana Dashboard & Zipkin Dashboard
+For Kibana
+```bash
+http://localhost:5601/
+```
+For Zipkin
+```bash
+http://localhost:9411/
+```

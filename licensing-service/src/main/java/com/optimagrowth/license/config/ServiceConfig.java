@@ -10,7 +10,7 @@ public class ServiceConfig{
 
   @Value("${example.property}")
   private String exampleProperty;
-    
+  
   @Value("${redis.server}")
   private String redisServer="";
 
